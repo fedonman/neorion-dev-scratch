@@ -1,0 +1,18 @@
+%% Use case diagram: Delete a Todo
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api["DELETE /todos/{id}"]
+  svc[Todo Service]
+  repo[(SQLite DB)]
+
+  user -->|clicks delete| ui
+  ui -->|DELETE request| api
+  api --> svc
+  svc -->|DELETE row| repo
+  repo -->|204 no content| api
+  api -->|success| ui
+  ui -->|removes item from list| user
+  svc -->|not found: 404| api
+  api -->|error message| ui
+  ui -->|shows error message| user

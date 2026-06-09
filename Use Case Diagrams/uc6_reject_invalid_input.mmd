@@ -1,0 +1,15 @@
+%% Use case diagram: Reject Invalid Input
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api["POST or PATCH /todos"]
+  val[zod Validation]
+
+  user -->|submits empty or over-long title| ui
+  ui -->|sends request with invalid body| api
+  api --> val
+  val -->|empty title| api
+  val -->|title exceeds 255 chars| api
+  val -->|malformed JSON body| api
+  api -->|400 with structured error details| ui
+  ui -->|displays validation error message| user

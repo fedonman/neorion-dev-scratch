@@ -1,0 +1,20 @@
+%% Use case diagram: Toggle Complete
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api["PATCH /todos/{id}"]
+  svc[Todo Service]
+  repo[(SQLite DB)]
+
+  user -->|clicks checkbox| ui
+  ui -->|PATCH with completed flag| api
+  api --> svc
+  svc -->|load existing or 404| repo
+  repo -->|existing todo| svc
+  svc -->|flips completed flag, sets updated_at| repo
+  repo -->|200 updated todo| api
+  api -->|updated todo| ui
+  ui -->|reflects new completion status| user
+  svc -->|not found: 404| api
+  api -->|error message| ui
+  ui -->|shows error message| user

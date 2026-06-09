@@ -1,0 +1,12 @@
+%% Use case diagram: Monitor Health
+flowchart LR
+  operator((Operator))
+  health[GET /health]
+  db[(SQLite DB)]
+
+  operator -->|polls endpoint| health
+  health -->|SELECT 1| db
+  db -->|reachable| health
+  health -->|200 status: ok| operator
+  db -->|unreachable| health
+  health -->|503 status: error| operator

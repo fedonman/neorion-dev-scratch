@@ -1,0 +1,23 @@
+%% Use case diagram: Edit a Todo
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api["PATCH /todos/{id}"]
+  val[Input Validation]
+  svc[Todo Service]
+  repo[(SQLite DB)]
+
+  user -->|clicks edit, changes title or description| ui
+  ui -->|PATCH with changed fields| api
+  api --> val
+  val -->|valid| svc
+  svc -->|load existing or 404| repo
+  repo -->|existing todo| svc
+  svc -->|applies changes, sets updated_at| repo
+  repo -->|200 updated todo| api
+  api -->|updated todo| ui
+  ui -->|reflects changes in list| user
+  val -->|invalid: 400 + error details| ui
+  svc -->|not found: 404| api
+  api -->|error message| ui
+  ui -->|shows error message| user

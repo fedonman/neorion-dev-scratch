@@ -1,0 +1,13 @@
+%% Use case diagram: View Todos
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api[GET /todos]
+  repo[(SQLite DB)]
+
+  user -->|opens app| ui
+  ui -->|fetch on load| api
+  api -->|SELECT ORDER BY created_at| repo
+  repo -->|rows| api
+  api -->|200 todo array| ui
+  ui -->|renders list with completion status| user

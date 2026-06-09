@@ -1,0 +1,124 @@
+%% TodoApp Domain Model
+%% Classes represent the core domain entity (Todo), service layer, repository interface,
+%% and the HTTP/validation boundary (TodoRequest/TodoResponse).
+
+classDiagram
+
+  %% ─── Core domain entity ───────────────────────────────────────────────────
+  class Todo {
+    +id: string
+    +title: string
+    +description: string|null
+    +completed: boolean
+    +createdAt: Date
+    +updatedAt: Date
+  }
+
+  %% ─── Inbound request shapes (validated by zod at the HTTP boundary) ────────
+  class CreateTodoRequest {
+    +title: string
+    +description: string|null
+  }
+
+  class UpdateTodoRequest {
+    +title: string|null
+    +description: string|null
+    +completed: boolean|null
+  }
+
+  %% ─── Outbound response shape ────────────────────────────────────────────────
+  class TodoResponse {
+    +id: string
+    +title: string
+    +description: string|null
+    +completed: boolean
+    +createdAt: string
+    +updatedAt: string
+  }
+
+  %% ─── Validation schema (zod) ────────────────────────────────────────────────
+  class TodoValidation {
+    +TITLE_MIN: int
+    +TITLE_MAX: int
+    +DESC_MAX: int
+    +validateCreate(body: object) CreateTodoRequest
+    +validateUpdate(body: object) UpdateTodoRequest
+    +validateId(params: object) string
+  }
+
+  %% ─── Service / domain logic ─────────────────────────────────────────────────
+  class TodoService {
+    +create(req: CreateTodoRequest) Todo
+    +list() Todo[]
+    +getById(id: string) Todo
+    +update(id: string, req: UpdateTodoRequest) Todo
+    +toggle(id: string) Todo
+    +delete(id: string) void
+  }
+
+  %% ─── Repository interface (data-access layer) ───────────────────────────────
+  class TodoRepository {
+    +insert(todo: Todo) Todo
+    +findAll() Todo[]
+    +findById(id: string) Todo|null
+    +update(todo: Todo) Todo
+    +delete(id: string) boolean
+  }
+
+  %% ─── Concrete SQLite implementation ────────────────────────────────────────
+  class SqliteTodoRepository {
+    -dbPath: string
+    -db: BetterSqlite3.Database
+    +initSchema() void
+    +insert(todo: Todo) Todo
+    +findAll() Todo[]
+    +findById(id: string) Todo|null
+    +update(todo: Todo) Todo
+    +delete(id: string) boolean
+  }
+
+  %% ─── Health module ───────────────────────────────────────────────────────────
+  class HealthService {
+    +check() HealthStatus
+  }
+
+  class HealthStatus {
+    +status: string
+    +db: string
+  }
+
+  %% ─── Config ─────────────────────────────────────────────────────────────────
+  class AppConfig {
+    +port: int
+    +databasePath: string
+    +logLevel: string
+  }
+
+  %% ─── Relationships ───────────────────────────────────────────────────────────
+
+  %% Validation shapes feed the service
+  TodoValidation ..> CreateTodoRequest : produces
+  TodoValidation ..> UpdateTodoRequest : produces
+
+  %% Service operates on the Todo entity
+  TodoService ..> Todo : creates / returns
+  TodoService ..> CreateTodoRequest : consumes
+  TodoService ..> UpdateTodoRequest : consumes
+
+  %% Service depends on the repository interface
+  TodoService --> TodoRepository : uses
+
+  %% Concrete repository implements the interface
+  SqliteTodoRepository ..|> TodoRepository : implements
+
+  %% Repository stores / retrieves the core entity
+  TodoRepository ..> Todo : persists / hydrates
+
+  %% HTTP response is shaped from the domain entity
+  Todo ..> TodoResponse : serialized to
+
+  %% HealthService uses config for DB path
+  HealthService --> AppConfig : reads
+
+  %% SqliteTodoRepository is configured via AppConfig
+  SqliteTodoRepository --> AppConfig : reads databasePath
