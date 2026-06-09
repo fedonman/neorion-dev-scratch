@@ -5,6 +5,7 @@
   "description": "Todo service",
   "main": "src/config.js",
   "scripts": {
+    "start": "node src/server.js",
     "test": "node --test"
   }
 }
