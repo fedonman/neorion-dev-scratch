@@ -1,28 +1,51 @@
 'use strict';
 
-const http = require('node:http');
+const express = require('express');
 
 /**
- * App factory: build the HTTP application (System Design §1, FR-024).
+ * App factory: construct and configure the Express application
+ * (Architecture §3.1, Test Strategy integration layer).
  *
- * Returns an http.Server so the entry point can call .listen()/.close()
- * directly. The request handler is intentionally minimal here — routing and
- * the Todo API are added by later epics. It currently answers a liveness
- * check and replies 404 for everything else, so the server is exercisable.
+ * It does NOT call listen() — the returned app is reused by the server entry
+ * point (which binds a port) and by in-process supertest API tests.
  *
- * @param {Object} [config] runtime configuration (AppConfig shape); reserved
- *   for handlers added by later epics.
+ * Middleware is mounted in a deliberate order:
+ *   1. request logger              — added in a later ticket
+ *   2. express.json()              — parse JSON request bodies into req.body
+ *   3. routes                      — built-in liveness + pluggable epic routers
+ *   4. 404 catch-all + error handler — added in a later ticket
+ *
+ * @param {Object} [deps] injected dependencies, so tests can supply e.g. a
+ *   temp DB path via config or a stub repository.
+ * @param {Object} [deps.config] runtime configuration (AppConfig shape).
+ * @param {Object} [deps.repository] persistence layer (attached by the data epic).
+ * @param {(app: import('express').Express, deps: Object) => void} [deps.routes]
+ *   hook used by AUTH/TODOS epics to attach their routers.
+ * @returns {import('express').Express} a configured Express app (not listening).
  */
-function createApp(config) {
-  return http.createServer((req, res) => {
-    if (req.method === 'GET' && req.url === '/health') {
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ status: 'ok' }));
-      return;
-    }
-    res.writeHead(404, { 'Content-Type': 'application/json' });
-    res.end(JSON.stringify({ error: 'Not Found' }));
+function createApp(deps = {}) {
+  const app = express();
+
+  // 1. Request logger middleware — added in a later ticket.
+
+  // 2. Parse JSON request bodies into req.body.
+  app.use(express.json());
+
+  // 3. Routes.
+  // Liveness check, so the server is exercisable before epics add their APIs.
+  app.get('/health', (req, res) => {
+    res.json({ status: 'ok' });
   });
+
+  // Pluggable route mounting: AUTH/TODOS epics attach their routers here,
+  // after body parsing and before the 404/error handlers.
+  if (typeof deps.routes === 'function') {
+    deps.routes(app, deps);
+  }
+
+  // 4. 404 catch-all + error handler — added in a later ticket.
+
+  return app;
 }
 
 module.exports = { createApp };

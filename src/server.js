@@ -19,7 +19,7 @@ async function start() {
   //   await repository.initialize(config.databasePath);
   // A failure here (e.g. an invalid DB path) rejects start() and exits non-zero.
 
-  const app = createApp(config);
+  const app = createApp({ config });
 
   await new Promise((resolve, reject) => {
     const server = app.listen(config.port);
