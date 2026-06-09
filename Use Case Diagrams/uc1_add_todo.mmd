@@ -1,0 +1,19 @@
+%% Use case diagram: Add a Todo
+flowchart LR
+  user((User))
+  ui[Web UI]
+  api[POST /todos]
+  val[Input Validation]
+  svc[Todo Service]
+  repo[(SQLite DB)]
+
+  user -->|enters title + optional description| ui
+  ui -->|submits form| api
+  api --> val
+  val -->|valid| svc
+  svc -->|INSERT| repo
+  repo -->|201 created todo| api
+  api -->|todo item| ui
+  ui -->|prepends item to list| user
+  val -->|invalid: 400 + error details| ui
+  ui -->|shows validation message| user
