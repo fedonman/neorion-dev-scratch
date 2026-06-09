@@ -1,0 +1,10 @@
+{
+  "name": "neorion-dev-scratch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Todo service",
+  "main": "src/config.js",
+  "scripts": {
+    "test": "node --test"
+  }
+}
