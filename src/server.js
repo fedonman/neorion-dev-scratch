@@ -1,11 +1,11 @@
-'use strict';
-
 // Process entry point (FR-024, NFR-020, NFR-004, NFR-024).
 // Loads config, builds the app, begins listening, and shuts down gracefully
 // on SIGTERM/SIGINT, allowing in-flight requests up to ~5s before forced exit.
 
-const { loadConfig } = require('./config');
-const { createApp } = require('./app');
+import process from 'node:process';
+import { fileURLToPath } from 'node:url';
+import { loadConfig } from './config.js';
+import { createApp } from './app.js';
 
 // Hard cap on graceful shutdown: stop accepting connections, then force exit
 // if in-flight requests have not drained within this window (NFR-024).
@@ -67,11 +67,12 @@ function registerShutdownHandlers(server) {
   process.on('SIGINT', () => shutdown('SIGINT'));
 }
 
-if (require.main === module) {
+// Run only when this module is the process entry point (not when imported by tests).
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
   start().catch((err) => {
     console.error(`Fatal startup error: ${err.message}`);
     process.exit(1);
   });
 }
 
-module.exports = { start };
+export { start };

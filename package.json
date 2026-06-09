@@ -3,9 +3,22 @@
   "version": "1.0.0",
   "private": true,
   "description": "Todo service",
-  "main": "src/config.js",
+  "type": "module",
+  "main": "src/server.js",
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "start": "node src/server.js",
     "test": "node --test"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.8.0",
+    "express": "^4.21.2",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "eslint": "^9.18.0",
+    "supertest": "^7.0.0"
   }
 }

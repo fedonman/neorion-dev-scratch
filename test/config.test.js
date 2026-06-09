@@ -1,8 +1,6 @@
-'use strict';
-
-const test = require('node:test');
-const assert = require('node:assert/strict');
-const { loadConfig, DEFAULTS } = require('../src/config');
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { loadConfig, DEFAULTS } from '../src/config.js';
 
 test('applies defaults when env vars are unset', () => {
   const config = loadConfig({});

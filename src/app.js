@@ -1,6 +1,4 @@
-'use strict';
-
-const http = require('node:http');
+import http from 'node:http';
 
 /**
  * App factory: build the HTTP application (System Design §1, FR-024).
@@ -25,4 +23,4 @@ function createApp(config) {
   });
 }
 
-module.exports = { createApp };
+export { createApp };

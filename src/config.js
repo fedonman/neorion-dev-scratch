@@ -1,5 +1,3 @@
-'use strict';
-
 // AppConfig: single source of truth for runtime settings (NFR-023, System Design §1).
 // Loaded from environment variables with sensible defaults. Pure and side-effect-free
 // so callers and tests can pass an explicit env override. No secrets handled (NFR-010).
@@ -33,4 +31,4 @@ function loadConfig(env = process.env) {
   };
 }
 
-module.exports = { loadConfig, DEFAULTS };
+export { loadConfig, DEFAULTS };
